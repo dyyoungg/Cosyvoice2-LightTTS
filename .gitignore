@@ -1,0 +1,11 @@
+__pycache__/
+.pyc
+build
+dist
+*.egg-info
+.idea
+.vscode
+pretrained_models
+test
+tts_test
+logs
