@@ -64,6 +64,7 @@ from light_tts.utils.health_utils import health_check
 from light_tts.static_config import dict_language
 from light_tts.server.io_struct import AbortReq, ReqError
 from light_tts.utils.common import text_normalize
+from light_tts.utils.text_norm_lib.text_normlization import TextNormalizer
 from cosyvoice.utils.file_utils import load_wav
 
 from light_tts.server.metrics import histogram_timer
@@ -74,8 +75,9 @@ sucess_request_counter = Counter("lightllm_request_success", "The total number o
 request_latency_histogram = Histogram("lightllm_request_latency", "Request latency", ['route'])
 
 from light_tts.server.health_monitor import start_health_check_process
-from light_tts.utils.log_utils import init_logger, configure_logging
+from light_tts.utils.log_utils import init_logger
 from light_tts.server.prompt_loader import prompt_config
+
 
 # Placeholder logger; will be configured and re-initialized in main()/normal_start()
 # logger = logging.getLogger(__name__)
@@ -308,11 +310,13 @@ async def inference_zero_shot_bistream(websocket: WebSocket):
     prompt_text = text_normalize(prompt_text_val, split=False)
     process_task = None
     # print("speech index", speech_index, have_alloc, request_id)
-
+    zh_normalizer = TextNormalizer()
     try:
         while True:
             input_data = await websocket.receive_json()
             tts_text = input_data.get("tts_text", "")
+            if not input_data.get("finish", False):
+                tts_text = zh_normalizer.normalize(tts_text)
             print("receive text", tts_text)
             cur_req_dict = {
                 "text": tts_text,
@@ -355,7 +359,7 @@ async def inference_zero_shot_bistream(websocket: WebSocket):
         try:
             await websocket.close()
         except Exception as close_error:
-            logger.warning(f"Error closing websocket: {close_error}")
+            pass
         if process_task is not None:
             process_task.cancel()
 
@@ -674,8 +678,6 @@ def main():
     args = parse_args()
 
     # Configure logging as early as possible
-    if args.log_path_or_dir:
-        configure_logging(args.log_path_or_dir)
     # Recreate module logger to attach shared handlers
     # global logger
     # logger = init_logger(__name__)
@@ -778,8 +780,6 @@ def main():
 
 def normal_start(args):
     # Configure logging as early as possible in this start path too
-    if getattr(args, 'log_path_or_dir', None):
-        configure_logging(args.log_path_or_dir)
     global logger
     logger = init_logger(__name__)
     assert args.max_req_input_len < args.max_req_total_len

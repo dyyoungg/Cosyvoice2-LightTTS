@@ -10,5 +10,4 @@ python -m light_tts.server.api_server \
     --encode_paral_num 50 \
     --gpt_paral_num 50 \
     --decode_paral_num 1 \
-    --mode triton_flashdecoding \
-    --log_path_or_dir "/mnt/afs/yangdeyu/dependency/lightllm-cosyvoice-old/lightllm-cosyvoice/logs/cosyvoice.log"
+    --mode triton_flashdecoding

@@ -88,62 +88,29 @@ class ColorFormatter(PreciseTimeFormatter):
         message = super().format(record)
         return f"{color}{message}{TerminalColor.RESET}"
 
-def _setup_logger(log_path: Optional[str] = None):
+def _setup_logger():
     _root_logger.setLevel(_LOG_LEVEL)
     global _default_handler
     global _default_file_handler
-    global _current_log_file_path
     color_fmt = ColorFormatter(_FORMAT, datefmt=_DATE_FORMAT)
 
-    # Always ensure console handler exists
     if _default_handler is None:
         _default_handler = logging.StreamHandler(sys.stdout)
         _default_handler.flush = sys.stdout.flush  # type: ignore
         _default_handler.setLevel(_LOG_LEVEL)
         _default_handler.setFormatter(color_fmt)
         _root_logger.addHandler(_default_handler)
-
-    # Determine effective log file path (argument overrides env/default)
-    target_log_file = None
-    if log_path:
-        # If user passes a .log file path, use it directly; otherwise treat as directory
-        # Prefer checking for directory existence when possible
-        if os.path.isdir(log_path) or (not log_path.endswith('.log')):
-            target_log_file = os.path.abspath(os.path.join(log_path, 'default.log'))
-        else:
-            target_log_file = os.path.abspath(log_path)
-    elif _LOG_DIR is not None:
-        target_log_file = os.path.abspath(os.path.join(_LOG_DIR, 'default.log'))
-
-    # Recreate file handler if needed (new path or missing)
-    current_path = _current_log_file_path if _default_file_handler is not None else None
-    need_new_file_handler = target_log_file is not None and (current_path != target_log_file)
-
-    if need_new_file_handler:
-        # Tear down old file handler if any
-        if _default_file_handler is not None:
+    
+    if _default_file_handler is None and _LOG_DIR is not None:
+        if not os.path.exists(_LOG_DIR):
             try:
-                _root_logger.removeHandler(_default_file_handler)
-            except Exception:
-                pass
-            try:
-                _default_file_handler.close()
-            except Exception:
-                pass
-            _default_file_handler = None
-
-        # Ensure directory exists
-        try:
-            os.makedirs(os.path.dirname(target_log_file), exist_ok=True)
-        except OSError as e:
-            _root_logger.warn(f"Error creating directory {os.path.dirname(target_log_file)} : {e}")
-
-        # Create new file handler
-        _default_file_handler = logging.FileHandler(target_log_file)
+                os.makedirs(_LOG_DIR)
+            except OSError as e:
+                _root_logger.warn(f"Error creating directory {_LOG_DIR} : {e}")
+        _default_file_handler = logging.FileHandler(_LOG_DIR + '/default.log')
         _default_file_handler.setLevel(_LOG_LEVEL)
-        _default_file_handler.setFormatter(PreciseTimeFormatter(_FORMAT, datefmt=_DATE_FORMAT))
+        _default_file_handler.setFormatter(NewLineFormatter(_FORMAT, datefmt=_DATE_FORMAT))
         _root_logger.addHandler(_default_file_handler)
-        _current_log_file_path = target_log_file
 
     _root_logger.propagate = False
 

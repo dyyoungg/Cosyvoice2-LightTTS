@@ -1,0 +1,79 @@
+# Copyright (c) 2021 PaddlePaddle Authors. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import re
+
+from .num import num2str
+
+# 温度表达式，温度会影响负号的读法
+# -3°C 零下三度
+RE_TEMPERATURE = re.compile(r'(-?)(\d+(\.\d+)?)(°C|℃|度|摄氏度)')
+measure_dict = {
+    "cm2": "平方厘米",
+    "cm²": "平方厘米",
+    "cm3": "立方厘米",
+    "cm³": "立方厘米",
+    "cm": "厘米",
+    "db": "分贝",
+    "ds": "毫秒",
+    "kg": "千克",
+    "km": "千米",
+    "m2": "平方米",
+    "m²": "平方米",
+    "m³": "立方米",
+    "m3": "立方米",
+    "ml": "毫升",
+    "mAh": "毫安时",
+    "mA": "毫安",
+    "mg": "毫克",
+    "mm": "毫米",
+    "m": "米",
+    "s²": "平方秒",
+    "s": "秒",
+    "h": "小时",
+    "Pa": "帕",
+    "W": "瓦特",
+    "g": "克"
+}
+
+
+def replace_temperature(match) -> str:
+    """
+    Args:
+        match (re.Match)
+    Returns:
+        str
+    """
+    sign = match.group(1)
+    temperature = match.group(2)
+    unit = match.group(3)
+    sign: str = "零下" if sign else ""
+    temperature: str = num2str(temperature)
+    unit: str = "摄氏度" if unit == "摄氏度" else "度"
+    result = f"{sign}{temperature}{unit}"
+    return result
+
+
+def replace_measure(sentence) -> str:
+    # 处理复合单位，如 m/s, kg/m
+    for q_notation in measure_dict:
+        # 处理 m/s, kg/m 等模式
+        pattern = re.compile(r'(\d+(\.\d+)?)' + re.escape(q_notation) + r'/([a-zA-Z0-9²³]+)')
+        sentence = pattern.sub(lambda match: f"{match.group(1)}{measure_dict[q_notation]}每{measure_dict.get(match.group(3), match.group(3))}", sentence)
+    
+    # 处理其他量词
+    for q_notation in measure_dict:
+        # 确保量词前面有数字才替换，支持小数
+        pattern = re.compile(r'(\d+(\.\d+)?)' + re.escape(q_notation))
+        sentence = pattern.sub(r'\1' + measure_dict[q_notation], sentence)
+    return sentence

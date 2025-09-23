@@ -39,49 +39,14 @@ prompt_config = {
                         "prompt_text": "其实最后选上我去拍电视剧的那几位导演，他们都是看我的简历，看了简历以后，不用见我人，直接就定了我。"
                         }
     },
-    "中文女":{
-                "中性": {"prompt_wav": find_prompt_audio_path("asaki.wav"),
-                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
-                        }
-    },
     "中文女1":{
-                "中性": {"prompt_wav": find_prompt_audio_path("asaki1.wav"),
-                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
-                        }
-    },
-    "中文女2":{
                 "中性": {"prompt_wav": find_prompt_audio_path("asaki2.wav"),
                         "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
                         }
     },
-    "中文女3":{
-                "中性": {"prompt_wav": find_prompt_audio_path("asaki3.wav"),
-                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
+    "中文女":{
+                "中性": {"prompt_wav": find_prompt_audio_path("asaki_short.wav"),
+                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了。"
                         }
-    },
-    "中文女4":{
-                "中性": {"prompt_wav": find_prompt_audio_path("asaki4.wav"),
-                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
-                        }
-    },
-    "中文女5":{
-                "中性": {"prompt_wav": find_prompt_audio_path("asaki5.wav"),
-                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
-                        }
-    },
-    "中文女6":{
-                "中性": {"prompt_wav": find_prompt_audio_path("asaki6.wav"),
-                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
-                        }
-    },
-    "中文女7":{
-                "中性": {"prompt_wav": find_prompt_audio_path("asaki7.wav"),
-                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
-                        }
-    },
-    "中文女8":{
-                "中性": {"prompt_wav": find_prompt_audio_path("asaki8.wav"),
-                        "prompt_text": "难道一直没有发现主播不太喜欢这个梗么，然后他就一直评论一直评论，然后我就把他删了，你再发一次，我就把你拉黑了。"
-                        }
-    },
+    }
 }
