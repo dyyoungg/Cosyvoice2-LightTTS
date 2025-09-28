@@ -103,3 +103,4 @@ WeTextProcessing==1.0.3
 wget==3.2
 wheel==0.45.1
 zstandard==0.23.0
+torch==2.5.1
