@@ -39,6 +39,8 @@ import multiprocessing as mp
 import logging
 import sys
 import os
+from pydub import AudioSegment
+from pydub.silence import detect_leading_silence
 
 # 设置多个库的日志级别为 ERROR，减少调试输出
 logging.getLogger("librosa").setLevel(logging.ERROR)
@@ -130,10 +132,59 @@ def generate_data(model_output):
         yield tts_audio
 
 async def generate_data_stream(generate_objs):
+    audio_buffer = bytearray()
+    first_flag = True
+    sampling_rate = 24000
+    time_thresh = 0.8
+    silence_threshold = -20
+
     for generator in generate_objs:
         async for i in generator:
             tts_audio = (i['tts_speech'] * (2 ** 15)).astype(np.int16).tobytes()
-            yield tts_audio
+            audio_buffer.extend(tts_audio)
+            buffer_duration = len(audio_buffer) / (2 * sampling_rate)  # 2 bytes per sample, sample_rate samples per second
+            
+            if buffer_duration >= time_thresh:
+                
+                audio = AudioSegment(
+                    data=bytes(audio_buffer),
+                    sample_width=2,
+                    frame_rate=sampling_rate,
+                    channels=1
+                )
+                
+                if first_flag:
+                   
+                    start_trim = detect_leading_silence(audio, silence_threshold=silence_threshold)
+                    
+                    safe_start_trim = max(0, start_trim - 48)  # 2ms缓冲
+                    safe_start_trim = min(safe_start_trim, len(audio) - 1)  # 不超过音频长度
+                    trimmed_audio = audio[safe_start_trim:]
+                    
+                    resampled_audio_bytes = trimmed_audio.raw_data
+                    first_flag = False
+                    print(f'first chunk in loop!!!!! audio duration: {buffer_duration}')
+                    
+                    audio_buffer = bytearray(resampled_audio_bytes)
+               
+                yield bytes(audio_buffer)
+                audio_buffer = bytearray()
+            
+    if len(audio_buffer) > 0: 
+        if first_flag:  # 如果从未处理过静音（整个音频< time thresh秒）
+            audio = AudioSegment(
+                data=bytes(audio_buffer),
+                sample_width=2,
+                frame_rate=sampling_rate,
+                channels=1
+            )
+            start_trim = detect_leading_silence(audio, silence_threshold=silence_threshold)
+            safe_start_trim = max(0, start_trim - 48)
+            trimmed_audio = audio[safe_start_trim:]
+            audio_buffer = bytearray(trimmed_audio.raw_data)
+            first_flag = False
+        yield bytes(audio_buffer)
+       
 
 def calculate_md5(file: UploadFile) -> str:
     hash_md5 = hashlib.md5()
