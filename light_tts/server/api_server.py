@@ -136,7 +136,7 @@ async def generate_data_stream(generate_objs):
     first_flag = True
     sampling_rate = 24000
     time_thresh = 0.8
-    silence_threshold = -20
+    silence_threshold = -40
 
     for generator in generate_objs:
         async for i in generator:

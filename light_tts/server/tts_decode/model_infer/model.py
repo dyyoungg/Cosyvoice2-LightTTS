@@ -192,4 +192,8 @@ class CosyVoice2Model(CosyVoiceModel):
             tts_speech, tts_source = self.hift.inference(speech_feat=tts_mel, cache_source=hift_cache_source)
             if self.hift_cache_dict[uuid] is not None:
                 tts_speech = fade_in_out(tts_speech, self.hift_cache_dict[uuid]['speech'], self.speech_window)
+            
+            if uuid in self.hift_cache_dict:
+                del self.hift_cache_dict[uuid]
+                
         return tts_speech
